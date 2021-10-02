@@ -1,10 +1,11 @@
-from bs4 import BeautifulSoup
-import requests
 import json
-import requests
 import os
-import time
 import sys
+import time
+
+import requests
+from bs4 import BeautifulSoup
+
 import config
 
 BASE_URL = 'https://www.iiscastelli.edu.it/'
@@ -16,7 +17,7 @@ class Circolare:
     def __init__(self, data):
         self.name = data.a.string
         self.url = BASE_URL+data.a.get('href').replace(' ', '%20').replace(
-            '(','%28').replace(')','%29')
+            '(', '%28').replace(')', '%29')
 
     @property
     def discord_payload(self):
@@ -27,11 +28,13 @@ class Circolare:
             }]
         })
 
+
 def req(payload):
     headers = {'Content-Type': 'application/json'}
     r = requests.post(WEBHOOK_URL, headers=headers,
                       data=payload)
     return r
+
 
 def send_webhook(circolare):
     r = req(circolare.discord_payload)
@@ -43,6 +46,7 @@ def send_webhook(circolare):
         time.sleep(int(r.json()['retry_after'])/1000)
         r = req(circolare.discord_payload)
         print(f'Retried {circolare.name}, status code {r.status_code}')
+
 
 if __name__ == '__main__':
     html = requests.get(LINK).text
@@ -68,4 +72,4 @@ if __name__ == '__main__':
     data = list(circolari.union(already_sent))
     data.sort()
 
-json.dump(data, open('already_sent.json', 'w'))
+    json.dump(data, open('already_sent.json', 'w'))
