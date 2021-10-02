@@ -3,6 +3,7 @@ import requests
 import json
 import requests
 import os
+import sys
 
 BASE_URL = 'https://www.iiscastelli.edu.it/'
 LINK = BASE_URL+'pager.aspx?page=circolari'
@@ -43,7 +44,8 @@ if __name__ == '__main__':
         c = Circolare(x)
         if c.url not in already_sent:
             circolari.add(c.url)
-            send_webhook(c)
+            if not "cache" in sys.argv:
+                send_webhook(c)
     data = list(circolari.union(already_sent))
     data.sort()
 
