@@ -12,7 +12,7 @@ BASE_URL = 'https://www.iiscastelli.edu.it/'
 LINK = BASE_URL+'pager.aspx?page=circolari'
 DISCORD_WEBHOOK_URL = config.discord_webhook
 TELEGRAM_URL = f"https://api.telegram.org/bot{config.telegram_token}/sendMessage"
-
+FILE_PATH=os.path.dirname(os.path.realpath(__file__))+"/already_sent.json"
 
 class Circolare:
     def __init__(self, data):
@@ -62,16 +62,16 @@ if __name__ == '__main__':
     html = requests.get(LINK).text
     soup = BeautifulSoup(html, 'html.parser')
     circolari = set()
-    if not os.path.exists('already_sent.json'):
+    if not os.path.exists(FILE_PATH):
         already_sent = []
     else:
-        already_sent = json.load(open('already_sent.json'))
+        already_sent = json.load(open(FILE_PATH))
     table = soup.find('tbody')
     table.contents.reverse()
     if "cache" in sys.argv:
         urls = list(map(lambda x: Circolare(x).url, table.contents))
         urls.sort()
-        json.dump(urls, open('already_sent.json', 'w'))
+        json.dump(urls, open(FILE_PATH, 'w'))
         exit()
     for x in table.contents:
         c = Circolare(x)
@@ -82,4 +82,4 @@ if __name__ == '__main__':
     data = list(circolari.union(already_sent))
     data.sort()
 
-    json.dump(data, open('already_sent.json', 'w'))
+    json.dump(data, open(FILE_PATH, 'w'))
